@@ -292,8 +292,8 @@
 <audio id="bgMusic" loop preload="auto">
   <source src="music.mp3" type="audio/mpeg">
 </audio>
-<button id="music-toggle" aria-label="Toggle music" title="Toggle music">🔇</button>
-
+<button id="music-toggle" aria-label="Toggle music" title="Tap for music">🔇</button>
+<span id="music-hint" style="position:fixed; top:24px; right:78px; z-index:60; font-family:'Quicksand',sans-serif; font-size:0.8rem; font-weight:700; color:var(--plum-soft); background:var(--white); padding:6px 12px; border-radius:999px; box-shadow:0 6px 16px rgba(122,61,110,0.15);">tap for music 🎵</span>
 <div class="bg-hearts" id="bgHearts"></div>
 
 <!-- Screen 1: The Question -->
@@ -467,6 +467,7 @@
 
   musicToggle.addEventListener('click', (e) => {
     e.stopPropagation();
+    document.getElementById('music-hint').style.display = 'none';
     if (bgMusic.paused) {
       playMusic();
     } else {
