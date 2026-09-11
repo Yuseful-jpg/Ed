@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Question For You</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pink-light:#FFD9E6;
+    --pink:#FFB3C6;
+    --pink-deep:#FF5C8A;
+    --lavender:#C9A8FF;
+    --plum:#4A2B57;
+    --plum-soft:#7A5A8C;
+    --white:#FFFDFB;
+    --shadow: 0 20px 50px rgba(122, 61, 110, 0.25);
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body{
+    margin:0;
+    padding:0;
+    height:100%;
+    font-family:'Quicksand', sans-serif;
+    color: var(--plum);
+    overflow-x:hidden;
+  }
+
+  body{
+    min-height:100vh;
+    background: linear-gradient(160deg, var(--pink-light) 0%, var(--pink) 45%, var(--lavender) 100%);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+  }
+
+  /* soft floating hearts in the background, subtle */
+  .bg-hearts{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    overflow:hidden;
+    z-index:0;
+  }
+  .bg-hearts span{
+    position:absolute;
+    bottom:-10%;
+    font-size: 22px;
+    opacity:0.35;
+    animation: floatUp linear infinite;
+    color: var(--white);
+  }
+  @keyframes floatUp{
+    0%{ transform: translateY(0) rotate(0deg); opacity:0; }
+    10%{ opacity:0.35; }
+    90%{ opacity:0.35; }
+    100%{ transform: translateY(-110vh) rotate(25deg); opacity:0; }
+  }
+
+  .screen{
+    position:relative;
+    z-index:1;
+    width:100%;
+    min-height:100vh;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding: 24px;
+  }
+  .screen.active{ display:flex; }
+
+  .card{
+    background: var(--white);
+    border-radius: 28px;
+    box-shadow: var(--shadow);
+    padding: 56px 48px;
+    max-width: 460px;
+    width:100%;
+    text-align:center;
+    position:relative;
+  }
+
+  h1{
+    font-family:'Fredoka', sans-serif;
+    font-weight:600;
+    font-size: 2rem;
+    line-height:1.25;
+    color: var(--plum);
+    margin: 0 0 8px;
+  }
+
+  p.sub{
+    font-size: 1rem;
+    color: var(--plum-soft);
+    margin: 0 0 36px;
+  }
+
+  /* --- Question screen --- */
+  #question-screen .card{
+    min-height: 340px;
+  }
+
+  .btn-row{
+    position: relative;
+    display:flex;
+    gap: 18px;
+    justify-content:center;
+    align-items:center;
+    min-height: 64px;
+  }
+
+  button{
+    font-family:'Quicksand', sans-serif;
+    font-weight:700;
+    font-size: 1.05rem;
+    border:none;
+    border-radius: 999px;
+    padding: 16px 34px;
+    cursor:pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  #yes-btn{
+    background: linear-gradient(135deg, var(--pink-deep), var(--lavender));
+    color: var(--white);
+    box-shadow: 0 10px 24px rgba(255, 92, 138, 0.4);
+  }
+  #yes-btn:hover{ transform: translateY(-2px) scale(1.04); box-shadow: 0 14px 30px rgba(255, 92, 138, 0.5); }
+
+  #no-btn{
+    background: var(--white);
+    color: var(--plum-soft);
+    border: 2px solid var(--pink);
+    position: static;
+  }
+  #no-btn.roaming{
+    position: fixed;
+    z-index: 50;
+    transition: top 0.18s ease, left 0.18s ease, transform 0.18s ease, font-size 0.18s ease, padding 0.18s ease;
+  }
+
+  .yes-scale{
+    display:inline-block;
+    transition: transform 0.2s ease;
+  }
+
+  /* --- Congrats screen --- */
+  #congrats-screen .card{
+    animation: popIn 0.5s cubic-bezier(.2,1.4,.4,1) both;
+  }
+  @keyframes popIn{
+    0%{ transform: scale(0.7); opacity:0; }
+    100%{ transform: scale(1); opacity:1; }
+  }
+  .heart-emoji{
+    font-size: 3rem;
+    display:block;
+    margin-bottom: 12px;
+  }
+  #next-btn{
+    background: linear-gradient(135deg, var(--lavender), var(--pink-deep));
+    color: var(--white);
+    box-shadow: 0 10px 24px rgba(201, 168, 255, 0.45);
+  }
+  #next-btn:hover{ transform: translateY(-2px) scale(1.04); }
+
+  /* --- Subscription joke screen --- */
+  #sub-screen .card{ max-width: 480px; }
+  .plan-badge{
+    display:inline-block;
+    background: var(--pink-light);
+    color: var(--pink-deep);
+    font-weight:700;
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
+    padding: 6px 16px;
+    border-radius: 999px;
+    margin-bottom: 18px;
+  }
+  .price{
+    font-family:'Fredoka', sans-serif;
+    font-size: 2.6rem;
+    font-weight:700;
+    color: var(--plum);
+    margin: 4px 0 2px;
+  }
+  .price span{
+    font-size: 1rem;
+    font-weight:500;
+    color: var(--plum-soft);
+  }
+  ul.features{
+    list-style:none;
+    padding:0;
+    margin: 24px 0 32px;
+    text-align:left;
+    display:flex;
+    flex-direction:column;
+    gap: 12px;
+  }
+  ul.features li{
+    display:flex;
+    align-items:flex-start;
+    gap: 10px;
+    font-size: 0.95rem;
+    color: var(--plum-soft);
+  }
+  ul.features li::before{
+    content: "💖";
+    flex-shrink:0;
+  }
+  #subscribe-btn{
+    width:100%;
+    background: linear-gradient(135deg, var(--pink-deep), var(--lavender));
+    color: var(--white);
+    box-shadow: 0 10px 24px rgba(255, 92, 138, 0.4);
+    font-size: 1.1rem;
+  }
+  #subscribe-btn:hover{ transform: translateY(-2px) scale(1.02); }
+  .fine-print{
+    font-size: 0.75rem;
+    color: var(--plum-soft);
+    opacity:0.7;
+    margin-top: 16px;
+  }
+
+  /* --- Final screen --- */
+  #final-screen .card{
+    animation: popIn 0.5s cubic-bezier(.2,1.4,.4,1) both;
+  }
+
+  /* confetti */
+  .confetti-piece{
+    position: fixed;
+    top: -10px;
+    width: 10px;
+    height: 16px;
+    z-index: 40;
+    pointer-events:none;
+    animation: confettiFall 2.8s linear forwards;
+  }
+  @keyframes confettiFall{
+    0%{ transform: translateY(0) rotate(0deg); opacity:1; }
+    100%{ transform: translateY(110vh) rotate(540deg); opacity:0.9; }
+  }
+
+  @media (max-width: 480px){
+    .card{ padding: 40px 28px; }
+    h1{ font-size: 1.6rem; }
+    .price{ font-size: 2.1rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation: none !important; transition: none !important; }
+  }
+
+  /* --- music toggle --- */
+  #music-toggle{
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 60;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    padding: 0;
+    background: var(--white);
+    color: var(--pink-deep);
+    font-size: 1.2rem;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow: 0 8px 20px rgba(122, 61, 110, 0.2);
+    border: 2px solid var(--pink-light);
+  }
+  #music-toggle:hover{ transform: translateY(-2px) scale(1.06); }
+  #music-toggle.playing{ animation: musicPulse 1.8s ease-in-out infinite; }
+  @keyframes musicPulse{
+    0%, 100%{ box-shadow: 0 8px 20px rgba(122, 61, 110, 0.2); }
+    50%{ box-shadow: 0 8px 24px rgba(255, 92, 138, 0.45); }
+  }
+</style>
+</head>
+<body>
+
+<!-- Background music: replace music.mp3 with your own royalty-free / personal track,
+     placed in the same folder as this file -->
+<audio id="bgMusic" loop preload="auto">
+  <source src="music.mp3.mp3" type="audio/mpeg">
+</audio>
+<button id="music-toggle" aria-label="Toggle music" title="Toggle music">🔇</button>
+
+<div class="bg-hearts" id="bgHearts"></div>
+
+<!-- Screen 1: The Question -->
+<div class="screen active" id="question-screen">
+  <div class="card">
+    <h1>Will you be my girlfriend?</h1>
+    <p class="sub">Choose wisely. One of these buttons is a little shy.</p>
+    <div class="btn-row" id="btnRow">
+      <button id="yes-btn"><span class="yes-scale" id="yesScale">Yes</span></button>
+      <button id="no-btn">No</button>
+    </div>
+  </div>
+</div>
+
+<!-- Screen 2: Congrats -->
+<div class="screen" id="congrats-screen">
+  <div class="card">
+    <span class="heart-emoji">🎉</span>
+    <h1>She said yes!</h1>
+    <p class="sub">Best decision you've made all week. Probably.</p>
+    <button id="next-btn">Next</button>
+  </div>
+</div>
+
+<!-- Screen 3: Fake Subscription -->
+<div class="screen" id="sub-screen">
+  <div class="card">
+    <span class="plan-badge">GIRLFRIEND+ PREMIUM</span>
+    <h1>One more step</h1>
+    <p class="sub">To activate your girlfriend privileges, please confirm your plan.</p>
+    <div class="price">$0.00 <span>/ forever, don't worry</span></div>
+    <ul class="features">
+      <li>Unlimited hugs, no data cap</li>
+      <li>Priority access to my attention</li>
+      <li>Free upgrades to "favorite person" status</li>
+      <li>24/7 customer support (it's just me, texting back fast)</li>
+      <li>Zero cancellation fee, because you can't cancel this one</li>
+    </ul>
+    <button id="subscribe-btn">Subscribe Now</button>
+    <p class="fine-print">By clicking subscribe you agree to be loved unconditionally. No refunds. No take-backs.</p>
+  </div>
+</div>
+
+<!-- Screen 4: Final -->
+<div class="screen" id="final-screen">
+  <div class="card">
+    <span class="heart-emoji">💌</span>
+    <h1>Subscription confirmed.</h1>
+    <p class="sub">Welcome to Girlfriend+. Terms and conditions: I really like you.</p>
+  </div>
+</div>
+
+<script>
+  // ---- background floating hearts ----
+  const bgHearts = document.getElementById('bgHearts');
+  const heartChars = ['💗','💕','💖'];
+  for(let i=0;i<12;i++){
+    const s = document.createElement('span');
+    s.textContent = heartChars[Math.floor(Math.random()*heartChars.length)];
+    s.style.left = Math.random()*100 + 'vw';
+    s.style.fontSize = (16 + Math.random()*18) + 'px';
+    s.style.animationDuration = (10 + Math.random()*10) + 's';
+    s.style.animationDelay = (Math.random()*10) + 's';
+    bgHearts.appendChild(s);
+  }
+
+  // ---- screen switching ----
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  // ---- the dodging No button ----
+  const noBtn = document.getElementById('no-btn');
+  const yesBtn = document.getElementById('yes-btn');
+  const yesScale = document.getElementById('yesScale');
+  let dodgeCount = 0;
+
+  // messages the No button cycles through as it gets more desperate
+  const noMessages = [
+    'No', 'Wait, no', 'Please don\'t', 'Nooo', 'Reconsider?',
+    'You wouldn\'t', 'Don\'t do this', 'I\'m scared', 'Pretty please?', '😭'
+  ];
+
+  function dodge(){
+    dodgeCount++;
+    noBtn.classList.add('roaming');
+
+    const btnW = noBtn.offsetWidth || 120;
+    const btnH = noBtn.offsetHeight || 56;
+    const margin = 20;
+    const maxX = window.innerWidth - btnW - margin;
+    const maxY = window.innerHeight - btnH - margin;
+
+    const newX = Math.max(margin, Math.random() * maxX);
+    const newY = Math.max(margin, Math.random() * maxY);
+
+    noBtn.style.left = newX + 'px';
+    noBtn.style.top = newY + 'px';
+
+    // cycle its message, getting more desperate each attempt
+    const msgIndex = Math.min(dodgeCount, noMessages.length - 1);
+    noBtn.textContent = noMessages[msgIndex];
+
+    // shrink it a little each time, down to a floor so it stays clickable-visible
+    const scaleDown = Math.max(1 - dodgeCount * 0.07, 0.45);
+    noBtn.style.transform = 'scale(' + scaleDown + ')';
+
+    // Yes button grows a little more confident each time she tries
+    const scale = Math.min(1 + dodgeCount * 0.06, 1.6);
+    yesScale.style.transform = 'scale(' + scale + ')';
+  }
+
+  noBtn.addEventListener('mouseenter', dodge);
+  noBtn.addEventListener('click', (e) => { e.preventDefault(); dodge(); });
+  noBtn.addEventListener('touchstart', (e) => { e.preventDefault(); dodge(); }, { passive:false });
+
+  // ---- confetti burst ----
+  function launchConfetti(){
+    const colors = ['#FF5C8A', '#C9A8FF', '#FFB3C6', '#FFD9E6', '#4A2B57'];
+    for(let i=0;i<60;i++){
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      piece.style.left = Math.random()*100 + 'vw';
+      piece.style.background = colors[Math.floor(Math.random()*colors.length)];
+      piece.style.animationDelay = (Math.random()*0.6) + 's';
+      piece.style.animationDuration = (2 + Math.random()*1.5) + 's';
+      piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+      document.body.appendChild(piece);
+      setTimeout(() => piece.remove(), 4200);
+    }
+  }
+
+  // ---- background music ----
+  const bgMusic = document.getElementById('bgMusic');
+  const musicToggle = document.getElementById('music-toggle');
+  bgMusic.volume = 0.35;
+  let musicStarted = false;
+  let musicWanted = false;
+
+  function playMusic(){
+    bgMusic.play().then(() => {
+      musicStarted = true;
+      musicWanted = true;
+      musicToggle.textContent = '🔊';
+      musicToggle.classList.add('playing');
+    }).catch(() => {
+      // browser blocked autoplay; will retry on next user interaction
+    });
+  }
+
+  function pauseMusic(){
+    bgMusic.pause();
+    musicWanted = false;
+    musicToggle.textContent = '🔇';
+    musicToggle.classList.remove('playing');
+  }
+
+  // try to start softly as soon as the page loads (may be blocked by the browser)
+  window.addEventListener('load', () => {
+    musicWanted = true;
+    playMusic();
+  });
+
+  // most browsers require a user gesture before audio with sound can play,
+  // so catch the first click/tap anywhere on the page as a fallback
+  document.addEventListener('click', function firstInteraction(){
+    if (musicWanted && !musicStarted) playMusic();
+    document.removeEventListener('click', firstInteraction);
+  });
+
+  musicToggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (bgMusic.paused) {
+      playMusic();
+    } else {
+      pauseMusic();
+    }
+  });
+
+  yesBtn.addEventListener('click', () => {
+    launchConfetti();
+    showScreen('congrats-screen');
+  });
+
+  document.getElementById('next-btn').addEventListener('click', () => {
+    showScreen('sub-screen');
+  });
+
+  document.getElementById('subscribe-btn').addEventListener('click', () => {
+    launchConfetti();
+    showScreen('final-screen');
+  });
+</script>
+
+</body>
+</html>
